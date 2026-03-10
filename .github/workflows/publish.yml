@@ -30,7 +30,7 @@ jobs:
           npm version patch -m "chore(release): v%s [skip ci]"
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --legacy-peer-deps
 
       - name: Build package
         run: npm run build
