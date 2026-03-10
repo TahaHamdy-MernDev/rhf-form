@@ -13,6 +13,8 @@
     "declarationMap": true,
     "jsx": "react-jsx",
     "strict": true,
+    "noEmit": true,
+    "outDir": "dist",
     "noFallthroughCasesInSwitch": true
   },
   "include": ["src"],
