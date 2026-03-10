@@ -1,12 +1,9 @@
 name: Publish npm package
 
 on:
-  release:
-    types: [published]
-  # Alternatively, uncomment to publish on every push to main
-  # push:
-  #   branches:
-  #     - main
+  push:
+    branches:
+      - main
 
 jobs:
   publish-npm:
@@ -14,12 +11,23 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 18
           registry-url: "https://registry.npmjs.org/"
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Bump package version
+        run: |
+          npm version patch -m "chore(release): v%s [skip ci]"
 
       - name: Install dependencies
         run: npm ci
@@ -31,3 +39,6 @@ jobs:
         run: npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Push version changes
+        run: git push origin HEAD:main --tags
