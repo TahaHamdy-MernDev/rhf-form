@@ -1,0 +1,192 @@
+import * as React from "react";
+import { Control, Controller, FieldValues, Path } from "react-hook-form";
+import { CheckIcon, Plus } from "lucide-react";
+import { useFormConfig, useFormUI } from "../../providers/form-config-provider";
+import { cn } from "../../utils/cn";
+
+type Option = {
+  label: string | React.ReactNode;
+  value: string;
+};
+
+function defaultAddLabel(v: string) {
+  return `Add "${v}"`;
+}
+
+function defaultNormalize(v: string) {
+  return v.trim();
+}
+
+type RHFCreatableSelectFieldProps<T extends FieldValues> = {
+  control: Control<T>;
+  name: Path<T>;
+  label: string;
+
+  options: Option[];
+  placeholder?: string;
+
+  addLabel?: (value: string) => string; // e.g. v => `Add "${v}"`
+  disabled?: boolean;
+  className?: string;
+
+  normalize?: (value: string) => string; // e.g. trim, uppercase
+};
+
+export function RHFCreatableSelectField<T extends FieldValues>({
+  control,
+  name,
+  label,
+  options,
+  placeholder = "Select…",
+  addLabel = defaultAddLabel,
+  disabled,
+  className,
+  normalize = defaultNormalize,
+}: RHFCreatableSelectFieldProps<T>) {
+  const { dictionary } = useFormConfig();
+  const {
+    Command,
+    CommandEmpty,
+    CommandGroup,
+    CommandInput,
+    CommandItem,
+    CommandList,
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+    Field,
+    FieldLabel,
+    FieldError,
+    Input,
+    InputGroup,
+  } = useFormUI();
+  const listId = React.useId();
+  const [open, setOpen] = React.useState(false);
+  const [query, setQuery] = React.useState("");
+  return (
+    <Controller
+      name={name}
+      control={control}
+      render={({ field, fieldState }) => {
+        const currentValue = String(field.value ?? "");
+        const selectedOption = options.find((o) => o.value === currentValue);
+        const displayLabel = selectedOption?.label ?? (currentValue || "");
+
+        const normalizedQuery = normalize(query);
+        const canAdd =
+          normalizedQuery.length > 0 &&
+          !options.some(
+            (o) => o.value.toLowerCase() === normalizedQuery.toLowerCase(),
+          );
+
+        function commit(value: string) {
+          const v = normalize(value);
+          field.onChange(v);
+          setOpen(false);
+          setQuery("");
+        }
+
+        return (
+          <Field data-invalid={fieldState.invalid} className={cn(className)}>
+            <FieldLabel>{label}</FieldLabel>
+
+            <Popover
+              open={open}
+              onOpenChange={(v: boolean) => (disabled ? null : setOpen(v))}
+            >
+              <PopoverTrigger className="w-full" asChild>
+                <InputGroup>
+                  <Input
+                    type="text"
+                    role="combobox"
+                    readOnly
+                    aria-expanded={open}
+                    aria-controls={listId}
+                    aria-invalid={fieldState.invalid}
+                    value={displayLabel.toString() ?? placeholder}
+                    disabled={disabled}
+                  />
+                </InputGroup>
+              </PopoverTrigger>
+
+              <PopoverContent className="w-full p-0" align="center">
+                <Command
+                  // Enter will select the highlighted item, but we also handle adding directly
+                  onKeyDown={(e: React.KeyboardEvent) => {
+                    if (e.key === "Enter" && canAdd) {
+                      e.preventDefault();
+                      commit(query);
+                    }
+                  }}
+                >
+                  <CommandInput
+                    value={query}
+                    onValueChange={setQuery}
+                    placeholder={dictionary.search_or_type}
+                  />
+
+                  <CommandList id={listId}>
+                    <CommandEmpty>
+                      {canAdd ? (
+                        <button
+                          type="button"
+                          className="flex w-full items-center gap-2 px-2 py-2 text-sm"
+                          onClick={() => commit(query)}
+                        >
+                          <Plus className="h-4 w-4" />
+                          {addLabel(normalizedQuery)}
+                        </button>
+                      ) : (
+                        <div className="px-2 py-2 text-sm text-muted-foreground">
+                          {dictionary.no_results}
+                        </div>
+                      )}
+                    </CommandEmpty>
+
+                    {/* Add row even if there are results */}
+                    {canAdd && (
+                      <CommandGroup>
+                        <CommandItem
+                          value={`__add__${normalizedQuery}`}
+                          onSelect={() => commit(query)}
+                        >
+                          <Plus className="mr-2 h-4 w-4" />
+                          {addLabel(normalizedQuery)}
+                        </CommandItem>
+                      </CommandGroup>
+                    )}
+
+                    <CommandGroup>
+                      {options.map((opt) => (
+                        <CommandItem
+                          key={opt.value}
+                          value={String(opt.label)}
+                          onSelect={() => commit(opt.value)}
+                        >
+                          <span
+                            data-slot="select-item-indicator"
+                            className={cn(
+                              "absolute ltr:right-2 rtl:left-2 flex size-3.5 items-center justify-center",
+                              opt.value === currentValue
+                                ? "opacity-100"
+                                : "opacity-0",
+                            )}
+                          >
+                            <CheckIcon />
+                          </span>
+                          {opt.label}
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
+
+            {fieldState.error && <FieldError errors={[fieldState.error]} />}
+          </Field>
+        );
+      }}
+    />
+  );
+}
