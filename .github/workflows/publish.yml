@@ -8,6 +8,8 @@ on:
 jobs:
   publish-npm:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -27,7 +29,7 @@ jobs:
 
       - name: Bump package version
         run: |
-          npm version patch
+          npm version patch -m "chore(release): v%s [skip ci]"
 
       - name: Install dependencies
         run: npm install --legacy-peer-deps
@@ -41,4 +43,4 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Push version changes
-        run: git push origin HEAD:main --tags
+        run: git push origin HEAD:master --tags
