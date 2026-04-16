@@ -6,15 +6,15 @@ import {
 } from "./zod-field-mapper";
 
 function extractEnumOptions(zodType: z.ZodTypeAny) {
-  const typeName = zodType._def.typeName;
+  const typeName = zodType?._def?.typeName;
 
-  if (typeName === z.ZodFirstPartyTypeKind.ZodEnum) {
+  if (typeName === "ZodEnum") {
     const enumValues = (zodType as z.ZodEnum<any>)._def.values;
     if (!enumValues) return undefined;
     return enumValues.map((val: string) => ({ label: val, value: val }));
   }
 
-  if (typeName === z.ZodFirstPartyTypeKind.ZodNativeEnum) {
+  if (typeName === "ZodNativeEnum") {
     const nativeValues = (zodType as z.ZodNativeEnum<any>)._def.values;
     if (!nativeValues) return undefined;
     const enumValues = Object.values(nativeValues);

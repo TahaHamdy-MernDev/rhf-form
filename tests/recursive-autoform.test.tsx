@@ -98,4 +98,25 @@ describe("Recursive AutoForm", () => {
     expect(screen.getByText("User Info")).toBeDefined();
     expect(screen.getByText("Address Info")).toBeDefined();
   });
+
+  it("should handle a root schema with refinements", () => {
+    const refinedSchema = z.object({
+      name: z.string().describe("Name"),
+    }).refine(val => !!val);
+
+    function TestComponent() {
+      const form = useForm({
+        defaultValues: { name: "" }
+      });
+
+      return (
+        <FormConfigProvider components={mockComponents as any}>
+          <AutoForm schema={refinedSchema as any} control={form.control} />
+        </FormConfigProvider>
+      );
+    }
+
+    render(<TestComponent />);
+    expect(screen.getByText("Name")).toBeDefined();
+  });
 });

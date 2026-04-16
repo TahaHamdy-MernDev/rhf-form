@@ -7,52 +7,61 @@ import { RHFDatePickerField } from "../components/fields/rhf-date-picker-field";
 
 export type FieldOverrideComponents = Record<string, React.ElementType>;
 
-export function getComponentForZodType(zodType: z.ZodTypeAny) {
+export function unwrapZodType(zodType: z.ZodTypeAny): z.ZodTypeAny {
   let currentType = zodType;
+  if (!currentType?._def) return currentType;
+
   let typeName = currentType._def.typeName;
 
-  // Unwrap optional, nullable, or default to get the underlying type
   while (
-    typeName === z.ZodFirstPartyTypeKind.ZodOptional ||
-    typeName === z.ZodFirstPartyTypeKind.ZodNullable ||
-    typeName === z.ZodFirstPartyTypeKind.ZodDefault ||
-    typeName === z.ZodFirstPartyTypeKind.ZodEffects
+    typeName === "ZodOptional" ||
+    typeName === "ZodNullable" ||
+    typeName === "ZodDefault" ||
+    typeName === "ZodEffects"
   ) {
-    if ("unwrap" in currentType._def) {
+    if ("unwrap" in currentType._def && typeof (currentType as any).unwrap === "function") {
       currentType = (currentType as any).unwrap();
-    } else if ("innerType" in currentType._def) {
+    } else if (currentType._def.innerType) {
       currentType = currentType._def.innerType;
-    } else if ("schema" in currentType._def) {
+    } else if (currentType._def.schema) {
       currentType = currentType._def.schema;
     } else {
       break;
     }
+    if (!currentType?._def) break;
     typeName = currentType._def.typeName;
   }
+  return currentType;
+}
+
+export function getComponentForZodType(zodType: z.ZodTypeAny) {
+  const currentType = unwrapZodType(zodType);
+  if (!currentType?._def) return { component: RHFInputField, props: {}, unwrappedType: zodType };
+  
+  const typeName = currentType._def.typeName;
 
   let component: React.ElementType = RHFInputField;
   let props: Record<string, any> = {};
 
   switch (typeName) {
-    case z.ZodFirstPartyTypeKind.ZodString:
+    case "ZodString":
       component = RHFInputField;
       break;
-    case z.ZodFirstPartyTypeKind.ZodNumber:
+    case "ZodNumber":
       component = RHFInputField;
       props = { type: "number" };
       break;
-    case z.ZodFirstPartyTypeKind.ZodBoolean:
+    case "ZodBoolean":
       component = RHFCheckboxField;
       break;
-    case z.ZodFirstPartyTypeKind.ZodEnum:
-    case z.ZodFirstPartyTypeKind.ZodNativeEnum:
+    case "ZodEnum":
+    case "ZodNativeEnum":
       component = RHFSelectField;
       break;
-    case z.ZodFirstPartyTypeKind.ZodDate:
+    case "ZodDate":
       component = RHFDatePickerField;
       break;
-    case z.ZodFirstPartyTypeKind.ZodObject:
-      // Object will be handled recursively in AutoForm
+    case "ZodObject":
       component = React.Fragment;
       break;
     default:

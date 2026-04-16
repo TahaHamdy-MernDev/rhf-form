@@ -2,7 +2,7 @@ import * as React from "react";
 import { z } from "zod";
 import { Control, FieldValues, Path } from "react-hook-form";
 import { resolveFieldInfo } from "./field-resolver";
-import { FieldOverrideComponents } from "./zod-field-mapper";
+import { FieldOverrideComponents, unwrapZodType } from "./zod-field-mapper";
 import { cn } from "../utils/cn";
 import { RHFFormSection } from "../components/forms/rhf-form-section";
 
@@ -25,7 +25,20 @@ export function AutoForm<T extends FieldValues>({
   subObjectLayout = "inline",
   parentPath = "",
 }: AutoFormProps<T>) {
-  const shape = schema.shape;
+  const unwrappedSchema = unwrapZodType(schema) as z.ZodObject<any>;
+
+  if (!unwrappedSchema) {
+    console.warn("AutoForm: provided schema is undefined.");
+    return null;
+  }
+
+  const shape = unwrappedSchema.shape;
+
+  if (!shape) {
+    console.warn("AutoForm: provided schema does not have a shape. Ensure it is a ZodObject.");
+    return null;
+  }
+
   const keys = Object.keys(shape);
 
   return (
@@ -42,25 +55,9 @@ export function AutoForm<T extends FieldValues>({
         const fieldPath = parentPath ? `${parentPath}.${key}` : key;
 
         // Check if it's a nested object
-        let currentType = fieldSchema;
-        while (
-          currentType._def.typeName === z.ZodFirstPartyTypeKind.ZodOptional ||
-          currentType._def.typeName === z.ZodFirstPartyTypeKind.ZodNullable ||
-          currentType._def.typeName === z.ZodFirstPartyTypeKind.ZodDefault ||
-          currentType._def.typeName === z.ZodFirstPartyTypeKind.ZodEffects
-        ) {
-          if ("unwrap" in currentType._def) {
-            currentType = (currentType as any).unwrap();
-          } else if ("innerType" in currentType._def) {
-            currentType = currentType._def.innerType;
-          } else if ("schema" in currentType._def) {
-            currentType = currentType._def.schema;
-          } else {
-            break;
-          }
-        }
+        const currentType = unwrapZodType(fieldSchema);
 
-        if (currentType._def.typeName === z.ZodFirstPartyTypeKind.ZodObject) {
+        if (currentType?._def?.typeName === "ZodObject") {
           const nestedAutoForm = (
             <AutoForm
               key={fieldPath}
