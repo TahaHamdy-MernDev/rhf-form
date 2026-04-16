@@ -42,7 +42,7 @@
         "test:watch": "vitest",
         "test:coverage": "vitest run --coverage",
         "dev:playground": "vite example",
-        "prepublishOnly": "pnpm run build"
+        "prepublishOnly": "npm run build"
     },
     "peerDependencies": {
         "clsx": ">=2.0.0",
