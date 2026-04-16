@@ -1,6 +1,6 @@
 {
     "name": "@tahahamdy/rhf-form",
-    "version": "1.0.11",
+    "version": "1.0.12",
     "description": "A reusable React Hook Form component system with shadcn/ui",
     "author": "Taha Hamdy",
     "license": "MIT",
