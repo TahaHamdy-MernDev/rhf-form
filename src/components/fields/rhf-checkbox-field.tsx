@@ -39,6 +39,7 @@ export function RHFCheckboxField<T extends FieldValues>({
         >
           <div className="flex items-center gap-3">
             <Checkbox
+              name={field.name}
               checked={!!field.value}
               onCheckedChange={field.onChange}
               disabled={disabled}

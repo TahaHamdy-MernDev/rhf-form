@@ -11,11 +11,13 @@ export default defineConfig({
     "react-hook-form",
     "tailwindcss",
     "zod",
+    "clsx",
+    "date-fns",
+    "lucide-react",
+    "react-day-picker",
+    "tailwind-merge",
   ],
   treeshake: true,
   sourcemap: true,
   minify: true,
-  banner: {
-    js: '"use client";',
-  },
 });

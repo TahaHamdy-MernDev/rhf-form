@@ -56,6 +56,7 @@ export function RHFSelectField<T extends FieldValues>({
           <FieldLabel>{label}</FieldLabel>
 
           <Select
+            name={field.name}
             value={field.value ?? ""}
             onValueChange={(val: string) => {
               field.onChange(val);

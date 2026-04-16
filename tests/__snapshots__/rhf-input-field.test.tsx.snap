@@ -1,0 +1,34 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`RHFInputField > should render correctly and match snapshot 1`] = `
+<DocumentFragment>
+  <form>
+    <div
+      data-testid="mock-field"
+    >
+      <label
+        data-testid="mock-label"
+      >
+        Test Label
+      </label>
+      <div
+        data-testid="mock-input-group"
+      >
+        <input
+          aria-invalid="false"
+          data-testid="mock-input"
+          name="testInput"
+          placeholder="Test Placeholder"
+          type="text"
+          value=""
+        />
+      </div>
+    </div>
+    <button
+      type="submit"
+    >
+      Submit
+    </button>
+  </form>
+</DocumentFragment>
+`;

@@ -34,9 +34,15 @@ export function RHFInputField<T extends FieldValues>({
             <InputGroup>
               <Input
                 {...field}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                  const val = e.target.value;
+                  field.onChange(
+                    type === "number" ? (val === "" ? "" : Number(val)) : val,
+                  );
+                }}
                 value={
                   type === "number"
-                    ? Number(field.value)
+                    ? Number(field.value) || field.value === 0
                       ? field.value
                       : ""
                     : field.value
