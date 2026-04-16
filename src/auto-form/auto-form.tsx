@@ -57,7 +57,7 @@ export function AutoForm<T extends FieldValues>({
         // Check if it's a nested object
         const currentType = unwrapZodType(fieldSchema);
 
-        if (currentType?._def?.typeName === "ZodObject") {
+        if (currentType?._def?.typeName === "ZodObject" || "shape" in currentType) {
           const nestedAutoForm = (
             <AutoForm
               key={fieldPath}

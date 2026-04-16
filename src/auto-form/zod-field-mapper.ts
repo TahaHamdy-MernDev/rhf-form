@@ -65,7 +65,11 @@ export function getComponentForZodType(zodType: z.ZodTypeAny) {
       component = React.Fragment;
       break;
     default:
-      component = RHFInputField;
+      if (currentType && "shape" in currentType) {
+        component = React.Fragment;
+      } else {
+        component = RHFInputField;
+      }
       break;
   }
 

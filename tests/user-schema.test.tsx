@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { render } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { AutoForm } from "../src/auto-form/auto-form";
