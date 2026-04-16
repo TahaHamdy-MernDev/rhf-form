@@ -10,13 +10,14 @@ function extractEnumOptions(zodType: z.ZodTypeAny) {
 
   if (typeName === z.ZodFirstPartyTypeKind.ZodEnum) {
     const enumValues = (zodType as z.ZodEnum<any>)._def.values;
+    if (!enumValues) return undefined;
     return enumValues.map((val: string) => ({ label: val, value: val }));
   }
 
   if (typeName === z.ZodFirstPartyTypeKind.ZodNativeEnum) {
-    const enumValues = Object.values(
-      (zodType as z.ZodNativeEnum<any>)._def.values,
-    );
+    const nativeValues = (zodType as z.ZodNativeEnum<any>)._def.values;
+    if (!nativeValues) return undefined;
+    const enumValues = Object.values(nativeValues);
     return enumValues
       .filter((val) => typeof val === "string")
       .map((val) => ({ label: val, value: String(val) }));

@@ -15,12 +15,15 @@ export function getComponentForZodType(zodType: z.ZodTypeAny) {
   while (
     typeName === z.ZodFirstPartyTypeKind.ZodOptional ||
     typeName === z.ZodFirstPartyTypeKind.ZodNullable ||
-    typeName === z.ZodFirstPartyTypeKind.ZodDefault
+    typeName === z.ZodFirstPartyTypeKind.ZodDefault ||
+    typeName === z.ZodFirstPartyTypeKind.ZodEffects
   ) {
     if ("unwrap" in currentType._def) {
       currentType = (currentType as any).unwrap();
     } else if ("innerType" in currentType._def) {
       currentType = currentType._def.innerType;
+    } else if ("schema" in currentType._def) {
+      currentType = currentType._def.schema;
     } else {
       break;
     }
@@ -33,9 +36,6 @@ export function getComponentForZodType(zodType: z.ZodTypeAny) {
   switch (typeName) {
     case z.ZodFirstPartyTypeKind.ZodString:
       component = RHFInputField;
-      // If it's an email or password, the user can override it using `fieldOverrides`
-      // or we can add basic checks here based on string validations if preferred,
-      // but standard string defaults to input.
       break;
     case z.ZodFirstPartyTypeKind.ZodNumber:
       component = RHFInputField;
@@ -50,6 +50,10 @@ export function getComponentForZodType(zodType: z.ZodTypeAny) {
       break;
     case z.ZodFirstPartyTypeKind.ZodDate:
       component = RHFDatePickerField;
+      break;
+    case z.ZodFirstPartyTypeKind.ZodObject:
+      // Object will be handled recursively in AutoForm
+      component = React.Fragment;
       break;
     default:
       component = RHFInputField;
